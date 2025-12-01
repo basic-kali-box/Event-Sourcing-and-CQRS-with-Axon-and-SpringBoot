@@ -31,4 +31,17 @@ public class AccountQueryController {
     public CompletableFuture<Account> getAccount(@PathVariable String id) {
         return queryGateway.query(new GetAccountQuery(id), ResponseTypes.instanceOf(Account.class));
     }
+
+    @GetMapping(path = "/watch/{id}", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+    public reactor.core.publisher.Flux<Account> subscribeToEvents(@PathVariable String id) {
+        return queryGateway.subscriptionQuery(
+                new GetAccountQuery(id),
+                ResponseTypes.instanceOf(Account.class),
+                ResponseTypes.instanceOf(Account.class)
+        ).initialResult().concatWith(queryGateway.subscriptionQuery(
+                new GetAccountQuery(id),
+                ResponseTypes.instanceOf(Account.class),
+                ResponseTypes.instanceOf(Account.class)
+        ).updates());
+    }
 }

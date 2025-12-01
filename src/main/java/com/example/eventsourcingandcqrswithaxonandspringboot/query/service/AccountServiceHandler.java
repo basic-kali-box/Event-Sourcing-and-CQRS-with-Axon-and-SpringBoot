@@ -23,10 +23,12 @@ import java.util.Date;
 public class AccountServiceHandler {
     private AccountRepository accountRepository;
     private OperationRepository operationRepository;
+    private org.axonframework.queryhandling.QueryUpdateEmitter queryUpdateEmitter;
 
-    public AccountServiceHandler(AccountRepository accountRepository, OperationRepository operationRepository) {
+    public AccountServiceHandler(AccountRepository accountRepository, OperationRepository operationRepository, org.axonframework.queryhandling.QueryUpdateEmitter queryUpdateEmitter) {
         this.accountRepository = accountRepository;
         this.operationRepository = operationRepository;
+        this.queryUpdateEmitter = queryUpdateEmitter;
     }
 
     @EventHandler
@@ -65,6 +67,7 @@ public class AccountServiceHandler {
                     .account(account)
                     .build();
             operationRepository.save(operation);
+            queryUpdateEmitter.emit(m -> ((com.example.eventsourcingandcqrswithaxonandspringboot.commonapi.queries.GetAccountQuery) m.getPayload()).getId().equals(event.getId()), account);
         }
     }
 
@@ -82,6 +85,7 @@ public class AccountServiceHandler {
                     .account(account)
                     .build();
             operationRepository.save(operation);
+            queryUpdateEmitter.emit(m -> ((com.example.eventsourcingandcqrswithaxonandspringboot.commonapi.queries.GetAccountQuery) m.getPayload()).getId().equals(event.getId()), account);
         }
     }
 }
